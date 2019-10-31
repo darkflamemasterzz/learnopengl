@@ -93,26 +93,36 @@ int main()
 	// set up vertex data (and buffer(s)) and configure vertex attribute
 	// -----------------------------------------------------------------
 	float vertices[] = {
-		-0.5f, -0.5f, 0.0f, // left
-		0.5f, -0.5f, 0.0f, // right
-		0.0f, 0.5f, 0.0f // top
+		0.5f, 0.5f, 0.0f, // top right
+		0.5f, -0.5f, 0.0f, // bottom right
+		-0.5f, -0.5f, 0.0f, // bottom left
+		-0.5f, 0.5f, 0.0f // top left
+	};
+	unsigned int indices[] = {
+		0, 1, 3, // first traingle
+		1, 2, 3 // second traingle
 	};
 
-	unsigned int VBO, VAO; //?
-	glGenVertexArrays(1, &VAO); //?
-	glGenBuffers(1, &VBO);
-	//? bind the vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s)
-	glBindVertexArray(VAO); //?
+	unsigned int VBO, VAO, EBO; // Vertex Buffer Object & Vertex Array Object & Element buffer object reference id
+	glGenVertexArrays(1, &VAO); // Generate a VAO
+	glGenBuffers(1, &VBO); // Generate a VBO
+	glGenBuffers(1, &EBO); // Generate a EBO
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO); //?
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); //?
+	//Bind the vertex data first,then bind and set vertex and element buffer(s), and then configure vertex and eleement attributes(s)
+	glBindVertexArray(VAO); // bind the VAO
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); //?
-	glEnableVertexAttribArray(0); //?
+	glBindBuffer(GL_ARRAY_BUFFER, VBO); // bind the vertex buffer
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
-	//? note that this is allowed, the call to glVertexAttributePointer register VBO as the vertex attribute's
-	// bound vertex buffer object so afterwards we can safely unbind
-	glBindVertexArray(0);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // copy our vertices array in a vertex buffer for OpenGL to use
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); // copy our vertices array in a element buffer for OpenGL to use
+
+	// set the vertex attributes pointers
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); // tell OpenGL how it should interpret the vertex data (per vertex attribute)
+	glEnableVertexAttribArray(0); // enable the vertex attribute
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0); // why unbind the vertex array here?
 
 	// set dimensions
 	glViewport(0, 0, 800, 600);
@@ -130,10 +140,11 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		// draw our first triangle
+		// Draw code in render loop
+		// --------------------------
 		glUseProgram(shaderProgram);
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindVertexArray(VAO); // bind the VAO
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		// check and call events and swap the buffers
 		glfwSwapBuffers(window);
@@ -175,3 +186,9 @@ void processInput(GLFWwindow* window)
 /*疑惑*/
 // 1.How to link vertex buffer to vertex shader?
 // 2.How maintain the buffer? CPU or GPU?
+// 3.What is vertex attribute?
+	// This vertex's data is represented using vertex attributes that can contain any data we'd like
+// 4.VAO? VBO?
+// 5.buffer? GPU memory?
+// 6.为什么能够unbind VAO却不能unbind VBO?
+	// http://www.photoneray.com/opengl-vao-vbo/
