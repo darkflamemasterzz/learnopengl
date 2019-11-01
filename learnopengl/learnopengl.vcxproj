@@ -22,6 +22,7 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="STB_IMAGE_IMPLEMENTATION.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shader.sf" />
