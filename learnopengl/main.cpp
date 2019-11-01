@@ -12,16 +12,19 @@ const unsigned int SCR_HEIGHT = 600;
 
 const char* vertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
+"layout (location = 1) in vec3 aColor;\n"
+"out vec3 ourColor;\n"
 "void main()\n"
 "{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+"gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+"ourColor = aColor;\n"
 "}\0";
 const char* fragmentShaderSource = "#version 330 core\n"
 "out vec4 FragColor;\n"
-"uniform vec4 ourColor;\n"
+"in vec3 ourColor;\n"
 "void main()\n"
 "{\n"
-"   FragColor = ourColor;\n"
+"   FragColor = vec4(ourColor, 1.0);\n"
 "}\n\0";
 
 
@@ -94,36 +97,31 @@ int main()
 	// set up vertex data (and buffer(s)) and configure vertex attribute
 	// -----------------------------------------------------------------
 	float vertices[] = {
-		0.5f, 0.5f, 0.0f, // top right
-		0.5f, -0.5f, 0.0f, // bottom right
-		-0.5f, -0.5f, 0.0f, // bottom left
-		-0.5f, 0.5f, 0.0f // top left
-	};
-	unsigned int indices[] = {
-		0, 1, 3, // first traingle
-		1, 2, 3 // second traingle
+		// positions         // colors
+		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
+		-0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
+		 0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
 	};
 
-	unsigned int VBO, VAO, EBO; // Vertex Buffer Object & Vertex Array Object & Element buffer object reference id
+	unsigned int VBO, VAO; // Vertex Buffer Object & Vertex Array Object & Element buffer object reference id
 	glGenVertexArrays(1, &VAO); // Generate a VAO
 	glGenBuffers(1, &VBO); // Generate a VBO
-	glGenBuffers(1, &EBO); // Generate a EBO
 
 	//Bind the vertex data first,then bind and set vertex and element buffer(s), and then configure vertex and eleement attributes(s)
 	glBindVertexArray(VAO); // bind the VAO
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); // bind the vertex buffer
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // copy our vertices array in a vertex buffer for OpenGL to use
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); // copy our vertices array in a element buffer for OpenGL to use
 
-	// set the vertex attributes pointers
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); // tell OpenGL how it should interpret the vertex data (per vertex attribute)
+	// position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0); // tell OpenGL how it should interpret the vertex data (per vertex attribute)
 	glEnableVertexAttribArray(0); // enable the vertex attribute
+	// color attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0); // why unbind the vertex array here?
+	glUseProgram(shaderProgram);
 
 	// set dimensions
 	glViewport(0, 0, 800, 600);
@@ -143,17 +141,8 @@ int main()
 
 		// Draw code in render loop
 		// --------------------------
-		glUseProgram(shaderProgram);
-
-		// update shader uniform
-		float timeValue = glfwGetTime();
-		float greenValue = sin(timeValue) / 2.0f + 0.5f;
-		int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-		glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
-
-		// bind the VAO and render traingle
-		glBindVertexArray(VAO); 
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		// render traingle
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		// check and call events and swap the buffers
 		glfwSwapBuffers(window);
