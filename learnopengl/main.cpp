@@ -161,31 +161,28 @@ int main()
 		glActiveTexture(GL_TEXTURE1); 
 		glBindTexture(GL_TEXTURE_2D, texture2); 
 
-		// create transformation
-		glm::mat4 transform = glm::mat4(1.0f);
-		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-		transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
-
-		// get matrix's uniform location and set matrix
+		// activate shader
 		ourShader.use();
-		unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+		// create transformation
+		glm::mat4 model = glm::mat4(1.0f);
+		glm::mat4 view = glm::mat4(1.0f);
+		glm::mat4 projection = glm::mat4(1.0f);
+		model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+		projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+		// retrieve the matrix uniform loacations
+		unsigned int modelLoc = glGetUniformLocation(ourShader.ID, "model");
+		unsigned int viewLoc = glGetUniformLocation(ourShader.ID, "view");
+		// pass them to the shaders (3 different ways)
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
+		// It's often best practice to set it outside the main loop only once
+		ourShader.setMat4("projection", projection);
 
 		// Draw code in render loop
 		// --------------------------
 		// render container
 		glBindVertexArray(VAO); // bind vertex array again?
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-		// draw another container
-		// ----------------------
-		// second transformation
-		transform = glm::mat4(1.0f); // reset it to identity matrix
-		transform = glm::translate(transform, glm::vec3(-0.5f, 0.5f, 0.0f));
-		float scaleAmount = sin(glfwGetTime());
-		transform = glm::scale(transform, glm::vec3(scaleAmount, scaleAmount, scaleAmount));
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, &transform[0][0]);
-		// rener another container
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		// check and call events and swap the buffers
@@ -228,6 +225,8 @@ void processInput(GLFWwindow* window)
 // 2.加载awesomeface.png和awesomeface.jpg出了事故，加载face.jpg却没什么毛病
 
 /*疑惑*/
+// 第一周
+
 // 1.How to link vertex buffer to vertex shader?
 // 2.How maintain the buffer? CPU or GPU?
 // 3.What is vertex attribute?
@@ -241,4 +240,8 @@ void processInput(GLFWwindow* window)
 // 那么一个属于客户端的函数时怎么生成一个属于服务端的buffer的？
 	// glGenBuffers()生成的是一个Buffer的ID，而不是一个Buffer
 // 9.vertex shader接受到的数据是从哪里来的？
+
+// 第二周
+
 // 10.能有多个VAO、VBO吗？
+// 11.Shader是不是在调用了Draw以后才执行？
