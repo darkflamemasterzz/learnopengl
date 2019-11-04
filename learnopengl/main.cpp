@@ -63,7 +63,7 @@ int main()
 	unsigned int VBO, VAO, EBO; // Vertex Buffer Object & Vertex Array Object & Element buffer object reference id
 	glGenVertexArrays(1, &VAO); 
 	glGenBuffers(1, &VBO); //？ creates buffer objects and returns the identifiers of the buffer objects.； Where is the object and what is the identifier?
-	glGenBuffers(1, &EBO); 
+	glGenBuffers(1, &EBO);
 
 	glBindVertexArray(VAO); //? bind the VAO; Bind to what?
 
@@ -73,12 +73,14 @@ int main()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO); // bind the element buffer
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); // sizeof(indices)?
 
+	// tell OpenGL how it should interpret the vertex data (per vertex attribute)
 	// position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0); // tell OpenGL how it should interpret the vertex data (per vertex attribute)
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0); 
 	glEnableVertexAttribArray(0); // enable the vertex attribute
 	// texture attribute
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
+
 
 	// load and create a texture
 	// -------------------------
@@ -161,8 +163,8 @@ int main()
 
 		// create transformation
 		glm::mat4 transform = glm::mat4(1.0f);
-		transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
 		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+		transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
 
 		// get matrix's uniform location and set matrix
 		ourShader.use();
@@ -173,6 +175,17 @@ int main()
 		// --------------------------
 		// render container
 		glBindVertexArray(VAO); // bind vertex array again?
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		// draw another container
+		// ----------------------
+		// second transformation
+		transform = glm::mat4(1.0f); // reset it to identity matrix
+		transform = glm::translate(transform, glm::vec3(-0.5f, 0.5f, 0.0f));
+		float scaleAmount = sin(glfwGetTime());
+		transform = glm::scale(transform, glm::vec3(scaleAmount, scaleAmount, scaleAmount));
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, &transform[0][0]);
+		// rener another container
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		// check and call events and swap the buffers
@@ -228,3 +241,4 @@ void processInput(GLFWwindow* window)
 // 那么一个属于客户端的函数时怎么生成一个属于服务端的buffer的？
 	// glGenBuffers()生成的是一个Buffer的ID，而不是一个Buffer
 // 9.vertex shader接受到的数据是从哪里来的？
+// 10.能有多个VAO、VBO吗？
